@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Matrix Grid Quiz & Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            background-color: #000000;
+            overflow-x: hidden;
+        }
+        .graph-glow {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+        }
+        .neon-card-white {
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .neon-card-white:hover {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8);
+            transform: translateY(-4px);
+            background-color: #ffffff;
+            color: #000000 !important;
+        }
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white font-mono flex flex-col justify-between p-4 relative select-none">
+
+    <canvas id="graphCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-20"></canvas>
+
+    <header class="max-w-4xl w-full mx-auto flex justify-between items-center bg-black border-2 border-white p-4 rounded-none shadow-xl z-10 relative">
+        <div>
+            <h1 class="text-xs tracking-widest font-black uppercase text-white">MATRIX_GEN_v4.5</h1>
+            <p id="category-badge" class="text-sm font-bold text-gray-400 mt-0.5">SUBJECT: SYSTEM</p>
+        </div>
+        <div class="flex gap-6 text-center">
+            <div>
+                <span class="text-[10px] text-gray-400 block tracking-wider">SCORE</span>
+                <span id="score" class="text-2xl font-black text-white">0</span>
+            </div>
+            <div class="border-l-2 border-white pl-6">
+                <span class="text-[10px] text-gray-400 block tracking-wider">STREAK</span>
+                <span id="streak" class="text-2xl font-black text-white">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl w-full mx-auto my-6 z-10 relative flex-grow flex flex-col justify-center">
+        <div class="bg-black border-2 border-white rounded-none p-6 md:p-8 shadow-2xl graph-glow relative">
+            
+            <div class="absolute top-4 right-4">
+                <button id="voice-btn" class="bg-black hover:bg-white border border-white text-white hover:text-black px-3 py-1.5 transition cursor-pointer text-xs uppercase font-bold tracking-tight" title="Listen Question">
+                    🔊 SPEAK
+                </button>
+            </div>
+
+            <div class="mt-6 mb-8">
+                <span class="text-xs font-bold bg-white text-black px-2 py-0.5 tracking-widest" id="q-index">LIVE_INPUT</span>
+                <h2 id="question-text" class="text-lg md:text-xl font-bold mt-4 leading-relaxed tracking-wide text-white">
+                    Initializing unique question algorithm...
+                </h2>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-1 gap-4">
+                </div>
+
+            <div id="feedback" class="mt-6 text-center font-black text-base uppercase border-t border-dashed border-white pt-4 hidden"></div>
+        </div>
+    </main>
+
+    <section class="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 z-10 relative">
+        <a href="https://github.com/amanboss100" target="_blank" class="neon-card-white border-2 border-white bg-black p-5 flex flex-col justify-between group cursor-pointer text-white">
+            <div>
+                <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-1">NETWORK_01</span>
+                <h3 class="text-xl font-black tracking-tight">GITHUB</h3>
+            </div>
+            <p class="text-xs opacity-70 mt-4 group-hover:text-black font-bold">@amanboss100 →</p>
+        </a>
+
+        <a href="mailto:amankkumar551@gmail.com" class="neon-card-white border-2 border-white bg-black p-5 flex flex-col justify-between group cursor-pointer text-white">
+            <div>
+                <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-1">NETWORK_02</span>
+                <h3 class="text-xl font-black tracking-tight">EMAIL</h3>
+            </div>
+            <p class="text-xs opacity-70 mt-4 group-hover:text-black font-bold">amankkumar551@gmail.com →</p>
+        </a>
+
+        <a href="https://www.instagram.com/amanboss_100/" target="_blank" class="neon-card-white border-2 border-white bg-black p-5 flex flex-col justify-between group cursor-pointer text-white">
+            <div>
+                <span class="text-[10px] tracking-widest text-gray-400 uppercase block mb-1">NETWORK_03</span>
+                <h3 class="text-xl font-black tracking-tight">INSTAGRAM</h3>
+            </div>
+            <p class="text-xs opacity-70 mt-4 group-hover:text-black font-bold">@amanboss_100 →</p>
+        </a>
+    </section>
+
+    <footer class="max-w-4xl w-full mx-auto text-center text-[10px] text-gray-600 tracking-widest py-2 z-10 relative uppercase">
+        CORE DATA BY AMAN • PURE BLACK & WHITE GRID MATRIX
+    </footer>
+
+    <script>
+        // --- 1. INFINITE GRAPH PAPER MOVING BACKGROUND ---
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let offsetY = 0;
+        let offsetX = 0;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        function drawGraphPaper() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 0.5;
+
+            const gridSize = 40;
+            offsetY = (offsetY + 0.4) % gridSize;
+            offsetX = (offsetX + 0.2) % gridSize;
+
+            for (let x = offsetX; x < width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+            }
+            for (let y = offsetY; y < height; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+            }
+            requestAnimationFrame(drawGraphPaper);
+        }
+        drawGraphPaper();
+
+        // --- 2. SYNTH AUDIO SYSTEM ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.setValueAtTime(900, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now); osc.stop(now + 0.25);
+                } else if (type === 'wrong') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120, now);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        // --- 3. DYNAMIC QUESTION POOL GENERATOR ---
+        const elementsList = ["ऑक्सीजन (O)", "हाइड्रोजन (H)", "कार्बन (C)", "नाइट्रोजन (N)", "सोडियम (Na)", "लोहा (Fe)"];
+        const elementsWeights = ["16", "1", "12", "14", "23", "56"];
+        
+        const computerTerms = [
+            {q: "RAM का फुल फॉर्म क्या होता है?", a: "Random Access Memory", w: ["Read Access Memory", "Rapid Action Memory", "Run Amok Memory"]},
+            {q: "URL का पूर्ण रूप क्या होता है?", a: "Uniform Resource Locator", w: ["Universal Resource Line", "United Resource Link", "Unique Resource Line"]}
+        ];
+
+        const historyTerms = [
+            {q: "पानीपत की पहली लड़ाई किस वर्ष में लड़ी गई थी?", a: "1526", w: ["1556", "1761", "1515"]},
+            {q: "भारत के राष्ट्रपिता के रूप में किसे जाना जाता है?", a: "महात्मा गांधी", w: ["सुभाष चंद्र बोस", "जवाहरलाल नेहरू", "भगत सिंह"]}
+        ];
+
+        function generateUniqueQuestion() {
+            const subjectSelector = Math.floor(Math.random() * 4);
+
+            if (subjectSelector === 0) {
+                const a = Math.floor(Math.random() * 90) + 10;
+                const b = Math.floor(Math.random() * 8) + 2;
+                const correctAnswer = a * b;
+                return {
+                    s: "MATHS [DYNAMIC]",
+                    q: `${a} × ${b} का सही मान कितना होगा?`,
+                    o: [correctAnswer, correctAnswer + b, correctAnswer - 5, a + b].sort(() => Math.random() - 0.5),
+                    a: correctAnswer
+                };
+            } 
+            else if (subjectSelector === 1) {
+                const randIdx = Math.floor(Math.random() * elementsList.length);
+                const elementName = elementsList[randIdx];
+                const correctWeight = elementsWeights[randIdx];
+                const options = [correctWeight, String(Number(correctWeight)+4), String(Number(correctWeight)-1), "32"].sort(() => Math.random() - 0.5);
+                return {
+                    s: "SCIENCE [DYNAMIC]",
+                    q: `आवर्त सारणी के अनुसार तत्व "${elementName}" का परमाणु द्रव्यमान क्या है?`,
+                    o: options,
+                    a: correctWeight
+                };
+            }
+            else if (subjectSelector === 2) {
+                const item = computerTerms[Math.floor(Math.random() * computerTerms.length)];
+                return {
+                    s: "COMPUTER SYSTEM",
+                    q: item.q,
+                    o: [item.a, ...item.w].sort(() => Math.random() - 0.5),
+                    a: item.a
+                };
+            }
+            else {
+                const item = historyTerms[Math.floor(Math.random() * historyTerms.length)];
+                return {
+                    s: "GENERAL KNOWLEDGE / SST",
+                    q: item.q,
+                    o: [item.a, ...item.w].sort(() => Math.random() - 0.5),
+                    a: item.a
+                };
+            }
+        }
+
+        // --- 4. CONTROL MATRIX ---
+        let score = 0; let streak = 0; let currentQuestion = null;
+
+        const scoreEl = document.getElementById('score');
+        const streakEl = document.getElementById('streak');
+        const categoryBadge = document.getElementById('category-badge');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackEl = document.getElementById('feedback');
+        const voiceBtn = document.getElementById('voice-btn');
+
+        function speakQuestion(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'hi-IN';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function loadNextQuestion() {
+            feedbackEl.classList.add('hidden');
+            currentQuestion = generateUniqueQuestion();
+            categoryBadge.innerText = `ID: ${currentQuestion.s}`;
+            questionText.innerText = currentQuestion.q;
+            
+            optionsContainer.innerHTML = '';
+            currentQuestion.o.forEach((option) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-black hover:bg-white border border-white p-4 font-bold transition active:scale-[0.99] cursor-pointer flex justify-between items-center text-white hover:text-black";
+                btn.innerHTML = `<span>${option}</span> <span class="text-xs opacity-50 font-mono">[SELECT]</span>`;
+                btn.addEventListener('click', () => { initAudio(); handleAnswerSelection(option, btn); });
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswerSelection(selectedOption, clickedBtn) {
+            const allButtons = optionsContainer.querySelectorAll('button');
+            allButtons.forEach(b => b.style.pointerEvents = 'none');
+
+            if (String(selectedOption) === String(currentQuestion.a)) {
+                playSound('correct');
+                score += 10 + (streak * 2); streak += 1;
+                clickedBtn.className = "w-full text-left bg-white text-black border-2 border-white p-4 font-black shadow-lg";
+                feedbackEl.innerText = ">> STATUS: CORRECT_ANSWER_CONFIRMED";
+                feedbackEl.className = "mt-6 text-center font-black text-sm tracking-widest text-white animate-pulse";
+                feedbackEl.classList.remove('hidden');
+            } else {
+                playSound('wrong'); streak = 0;
+                clickedBtn.className = "w-full text-left bg-black text-gray-500 border border-dashed border-gray-700 p-4 font-bold line-through";
+                allButtons.forEach(b => {
+                    if(b.querySelector('span').innerText == currentQuestion.a) {
+                        b.className = "w-full text-left bg-white text-black border-2 border-white p-4 font-black";
+                    }
+                });
+                feedbackEl.innerText = ">> STATUS: ERROR_INVALID_SELECTION";
+                feedbackEl.className = "mt-6 text-center font-black text-sm tracking-widest text-gray-400";
+                feedbackEl.classList.remove('hidden');
+            }
+            scoreEl.innerText = score; streakEl.innerText = streak;
+            setTimeout(loadNextQuestion, 1600);
+        }
+
+        voiceBtn.addEventListener('click', () => { initAudio(); if (currentQuestion) speakQuestion(currentQuestion.q); });
+        loadNextQuestion();
+    </script>
+</body>
+</html>
